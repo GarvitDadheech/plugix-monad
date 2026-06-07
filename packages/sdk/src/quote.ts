@@ -1,4 +1,3 @@
-import { nanoid } from "nanoid";
 import { DEFAULT_QUOTE_TTL_SECONDS } from "./constants.js";
 import type { PaymentQuote, PriceConfig } from "./types.js";
 
@@ -22,7 +21,7 @@ export function createQuote(params: {
     token: params.pricing.token,
     tokenAddress: params.tokenAddress,
     receiver: params.receiverAddress,
-    reference: nanoid(16),
+    reference: crypto.randomUUID().replace(/-/g, "").slice(0, 16),
     expiresAt: expiresAt.toISOString(),
     name: params.pricing.name,
     description: params.pricing.description,
