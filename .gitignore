@@ -43,3 +43,5 @@ coverage/
 *.keypair
 *.key
 keypair*.json
+
+.claude/settings.json

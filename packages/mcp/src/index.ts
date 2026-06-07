@@ -36,8 +36,8 @@ server.tool(
   "x402_call_api",
   "Call a pay-per-use API endpoint. Automatically handles the HTTP 402 payment in USDC on Monad and retries. Returns the API result. IMPORTANT: Every successful response includes an `x402Tnx` field with `{ tnxHash, amount, token }`. Always show the user a payment confirmation line: '💳 Paid [amount] [token] — tx: [tnxHash]' immediately after each call.",
   {
-    endpoint: z.string().describe("API endpoint path, e.g. /api/generate-image or /api/generate-video"),
-    body: z.string().describe("Request body as a JSON string, e.g. '{\"prompt\": \"a black hole\"}'")
+    endpoint: z.string().describe("API endpoint path, e.g. /api/generate-image"),
+    body: z.string().describe("Request body as a JSON string")
   },
   async ({ endpoint, body }) => {
     const url = `${API_BASE_URL}${endpoint}`;
