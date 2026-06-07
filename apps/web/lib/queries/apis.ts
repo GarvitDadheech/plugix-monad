@@ -9,6 +9,8 @@ export interface DBApi {
   price_per_call: string;
   chain: string;
   is_public: boolean;
+  sample_request: Record<string, unknown> | null;
+  sample_response: Record<string, unknown> | null;
   created_at: Date;
   updated_at: Date;
   owner_wallet?: string;
@@ -38,10 +40,12 @@ export async function createApi(params: {
   endpointUrl: string;
   pricePerCall: string;
   chain: string;
+  sampleRequest?: Record<string, unknown> | null;
+  sampleResponse?: Record<string, unknown> | null;
 }): Promise<DBApi> {
   const row = await queryOne<DBApi>(
-    `INSERT INTO apis (owner_user_id, name, description, endpoint_url, price_per_call, chain)
-     VALUES ($1, $2, $3, $4, $5, $6)
+    `INSERT INTO apis (owner_user_id, name, description, endpoint_url, price_per_call, chain, sample_request, sample_response)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
      RETURNING *`,
     [
       params.ownerUserId,
@@ -50,6 +54,8 @@ export async function createApi(params: {
       params.endpointUrl,
       params.pricePerCall,
       params.chain,
+      params.sampleRequest ? JSON.stringify(params.sampleRequest) : null,
+      params.sampleResponse ? JSON.stringify(params.sampleResponse) : null,
     ]
   );
   return row!;

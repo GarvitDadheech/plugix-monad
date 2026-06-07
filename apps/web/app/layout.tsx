@@ -21,6 +21,11 @@ export const metadata = {
   title: "Plugix — AI Agent Execution Layer",
   description:
     "The execution and payment layer for AI agents. Pay-per-use APIs on Monad, powered by Privy embedded wallets.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -29,7 +34,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       lang="en"
       className={`dark ${inter.variable} ${jakarta.variable} ${GeistMono.variable}`}
     >
-      <body className="font-sans antialiased">
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
       </body>
     </html>

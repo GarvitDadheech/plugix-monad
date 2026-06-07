@@ -58,20 +58,42 @@ export async function listCallsForUser(userId: number, limit = 50): Promise<DBAp
 export interface UserStats {
   total_spent: string;
   total_calls: string;
+  successful_calls: string;
+  failed_calls: string;
   total_fees: string;
 }
 
 export async function getUserStats(userId: number): Promise<UserStats> {
   const row = await queryOne<UserStats>(
     `SELECT
-       COALESCE(SUM(amount_spent), 0)::TEXT  AS total_spent,
-       COUNT(*)::TEXT                         AS total_calls,
-       COALESCE(SUM(platform_fee), 0)::TEXT  AS total_fees
+       COALESCE(SUM(CASE WHEN status = 'success' THEN amount_spent ELSE 0 END), 0)::TEXT AS total_spent,
+       COUNT(*)::TEXT AS total_calls,
+       COUNT(CASE WHEN status = 'success' THEN 1 END)::TEXT AS successful_calls,
+       COUNT(CASE WHEN status = 'failed' THEN 1 END)::TEXT AS failed_calls,
+       COALESCE(SUM(CASE WHEN status = 'success' THEN platform_fee ELSE 0 END), 0)::TEXT AS total_fees
      FROM api_calls
-     WHERE user_id = $1 AND status = 'success'`,
+     WHERE user_id = $1`,
     [userId]
   );
-  return row ?? { total_spent: "0", total_calls: "0", total_fees: "0" };
+  return row ?? { total_spent: "0", total_calls: "0", successful_calls: "0", failed_calls: "0", total_fees: "0" };
+}
+
+export interface IncomingStats {
+  incoming_calls: string;
+  total_earned: string;
+}
+
+export async function getIncomingStats(userId: number): Promise<IncomingStats> {
+  const row = await queryOne<IncomingStats>(
+    `SELECT
+       COUNT(*)::TEXT AS incoming_calls,
+       COALESCE(SUM(ac.amount_spent), 0)::TEXT AS total_earned
+     FROM api_calls ac
+     JOIN apis a ON a.id = ac.api_id
+     WHERE a.owner_user_id = $1 AND ac.status = 'success'`,
+    [userId]
+  );
+  return row ?? { incoming_calls: "0", total_earned: "0" };
 }
 
 export interface ApiBreakdown {

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { usePrivy } from "@privy-io/react-auth";
-import { PlusCircle, ExternalLink } from "lucide-react";
+import { PlusCircle, ExternalLink, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,10 +19,47 @@ interface PublishedApi {
   endpoint_url: string;
   price_per_call: string;
   chain: string;
+  sample_request: Record<string, unknown> | null;
+  sample_response: Record<string, unknown> | null;
   created_at: string;
 }
 
 const CHAIN = { value: "monad-devnet", label: "Monad Devnet" };
+
+const SAMPLE_REQUEST_PLACEHOLDER = `{
+  "query": "string — search term",
+  "limit": "number — max results (default 10)",
+  "filters": {
+    "category": "string — optional filter"
+  }
+}`;
+
+const SAMPLE_RESPONSE_PLACEHOLDER = `{
+  "results": [
+    {
+      "id": "string",
+      "title": "string",
+      "score": "number"
+    }
+  ],
+  "total": "number"
+}`;
+
+function JsonError({ text }: { text: string }) {
+  if (!text.trim()) return null;
+  try { JSON.parse(text); return null; } catch {
+    return (
+      <p className="flex items-center gap-1 text-xs text-destructive mt-1">
+        <AlertCircle className="h-3 w-3" /> Invalid JSON
+      </p>
+    );
+  }
+}
+
+function isValidJson(text: string) {
+  if (!text.trim()) return true;
+  try { JSON.parse(text); return true; } catch { return false; }
+}
 
 export default function PublishPage() {
   const { getAccessToken } = usePrivy();
@@ -36,6 +73,8 @@ export default function PublishPage() {
     description: "",
     endpointUrl: "",
     pricePerCall: "",
+    sampleRequest: "",
+    sampleResponse: "",
     chain: "monad-devnet",
   });
 
@@ -51,41 +90,42 @@ export default function PublishPage() {
     setFetchingApis(false);
   }, [getAccessToken]);
 
-  useEffect(() => {
-    fetchMyApis();
-  }, [fetchMyApis]);
+  useEffect(() => { fetchMyApis(); }, [fetchMyApis]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isValidJson(form.sampleRequest) || !isValidJson(form.sampleResponse)) return;
     setLoading(true);
     setSuccess(false);
 
     const token = await getAccessToken();
     const res = await fetch("/api/apis", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         name: form.name,
         description: form.description || undefined,
         endpointUrl: form.endpointUrl,
         pricePerCall: form.pricePerCall,
         chain: form.chain,
+        sampleRequest: form.sampleRequest.trim() ? JSON.parse(form.sampleRequest) : undefined,
+        sampleResponse: form.sampleResponse.trim() ? JSON.parse(form.sampleResponse) : undefined,
       }),
     });
 
     if (res.ok) {
       setSuccess(true);
-      setForm({ name: "", description: "", endpointUrl: "", pricePerCall: "", chain: "monad-devnet" });
+      setForm({ name: "", description: "", endpointUrl: "", pricePerCall: "", sampleRequest: "", sampleResponse: "", chain: "monad-devnet" });
       fetchMyApis();
+      setTimeout(() => setSuccess(false), 3000);
     }
     setLoading(false);
   };
 
+  const jsonInvalid = !isValidJson(form.sampleRequest) || !isValidJson(form.sampleResponse);
+
   return (
-    <div className="space-y-8 max-w-3xl">
+    <div className="space-y-8">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Publish API</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -103,6 +143,8 @@ export default function PublishPage() {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-5">
+
+            {/* Name + Price */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="name">API Name *</Label>
@@ -125,10 +167,12 @@ export default function PublishPage() {
                   value={form.pricePerCall}
                   onChange={(e) => setForm({ ...form, pricePerCall: e.target.value })}
                   required
+                  className="[appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                 />
               </div>
             </div>
 
+            {/* Endpoint */}
             <div className="space-y-2">
               <Label htmlFor="endpoint">Endpoint URL *</Label>
               <Input
@@ -141,31 +185,85 @@ export default function PublishPage() {
               />
             </div>
 
+            {/* Description */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description">
+                Description
+                <span className="ml-1.5 text-xs text-muted-foreground font-normal">
+                  — tell agents what this API does and when to use it
+                </span>
+              </Label>
               <Textarea
                 id="description"
-                placeholder="Describe what your API does…"
+                placeholder="Returns real-time weather data for a given city. Use this when you need current temperature, humidity, or forecast information."
                 rows={3}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
 
+            {/* Sample Request + Response */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="sampleRequest">
+                  Sample Request Body
+                  <span className="ml-1.5 text-xs text-muted-foreground font-normal">JSON</span>
+                </Label>
+                <Textarea
+                  id="sampleRequest"
+                  placeholder={SAMPLE_REQUEST_PLACEHOLDER}
+                  rows={8}
+                  className="font-mono text-xs resize-none"
+                  value={form.sampleRequest}
+                  onChange={(e) => setForm({ ...form, sampleRequest: e.target.value })}
+                />
+                <JsonError text={form.sampleRequest} />
+                <p className="text-xs text-muted-foreground/60">Describe each field so agents know what to send</p>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="sampleResponse">
+                  Sample Response
+                  <span className="ml-1.5 text-xs text-muted-foreground font-normal">JSON</span>
+                </Label>
+                <Textarea
+                  id="sampleResponse"
+                  placeholder={SAMPLE_RESPONSE_PLACEHOLDER}
+                  rows={8}
+                  className="font-mono text-xs resize-none"
+                  value={form.sampleResponse}
+                  onChange={(e) => setForm({ ...form, sampleResponse: e.target.value })}
+                />
+                <JsonError text={form.sampleResponse} />
+                <p className="text-xs text-muted-foreground/60">Show agents what fields to expect in the response</p>
+              </div>
+            </div>
+
+            {/* Chain */}
             <div className="space-y-2">
               <Label>Chain</Label>
-              <div className="flex items-center h-9 px-3 rounded-md border border-border bg-muted/30 text-sm text-muted-foreground gap-2">
-                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+              <div className="flex items-center h-9 px-3 rounded-md border border-border bg-muted/30 text-sm text-muted-foreground gap-2 w-full">
+                <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
                 {CHAIN.label}
               </div>
             </div>
 
             <div className="flex items-center gap-3 pt-1">
-              <Button type="submit" disabled={loading}>
-                {loading ? "Publishing…" : "Publish API"}
+              <Button type="submit" disabled={loading || jsonInvalid} className="min-w-[130px]">
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    Publishing…
+                  </>
+                ) : (
+                  <>
+                    <PlusCircle className="h-4 w-4 mr-2" />
+                    Publish API
+                  </>
+                )}
               </Button>
               {success && (
-                <span className="text-sm text-emerald-400 font-medium">
+                <span className="flex items-center gap-1.5 text-sm text-primary font-medium animate-fade-up">
+                  <CheckCircle2 className="h-4 w-4" />
                   Published successfully!
                 </span>
               )}
@@ -181,7 +279,10 @@ export default function PublishPage() {
         </CardHeader>
         <CardContent className="p-0">
           {fetchingApis ? (
-            <div className="py-8 text-center text-sm text-muted-foreground">Loading…</div>
+            <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading…
+            </div>
           ) : !apis.length ? (
             <div className="py-12 text-center text-sm text-muted-foreground">
               No APIs published yet.
@@ -215,9 +316,7 @@ export default function PublishPage() {
                       {formatAmount(api.price_per_call)} USDC
                     </TableCell>
                     <TableCell>
-                      <Badge variant="secondary" className="text-xs">
-                        {api.chain}
-                      </Badge>
+                      <Badge variant="secondary" className="text-xs">{api.chain}</Badge>
                     </TableCell>
                   </TableRow>
                 ))}

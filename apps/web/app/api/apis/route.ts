@@ -17,6 +17,8 @@ interface CreateApiBody {
   endpointUrl?: string;
   pricePerCall?: string;
   chain?: string;
+  sampleRequest?: Record<string, unknown>;
+  sampleResponse?: Record<string, unknown>;
 }
 
 export async function POST(request: NextRequest) {
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
-  const { name, description, endpointUrl, pricePerCall, chain } = body;
+  const { name, description, endpointUrl, pricePerCall, chain, sampleRequest, sampleResponse } = body;
   if (!name || !endpointUrl || !pricePerCall) {
     return Response.json(
       { error: "name, endpointUrl, and pricePerCall are required" },
@@ -46,6 +48,8 @@ export async function POST(request: NextRequest) {
       endpointUrl,
       pricePerCall,
       chain: chain ?? "monad-devnet",
+      sampleRequest: sampleRequest ?? null,
+      sampleResponse: sampleResponse ?? null,
     });
     return Response.json({ api }, { status: 201 });
   } catch (err) {
