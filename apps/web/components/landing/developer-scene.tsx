@@ -7,11 +7,7 @@ const MCP_CONFIG = `{
   "mcpServers": {
     "plugix": {
       "command": "npx",
-      "args": ["-y", "@plugix/mcp-server"],
-      "env": {
-        "PLUGIX_USER_ID": "did:privy:abc123",
-        "PLUGIX_ENDPOINT": "https://api.plugix.xyz"
-      }
+      "args": ["-y", "@plugix/mcp-server"]
     }
   }
 }`;

@@ -68,7 +68,7 @@ function formatRelativeTime(iso: string) {
 
 function settlementLabel(status: string) {
   if (status === "success") return "Settled";
-  if (status === "pending") return "Escrow locked";
+  if (status === "pending") return "Pending";
   return "Failed";
 }
 
@@ -290,12 +290,6 @@ export default function DashboardPage() {
     refetchBalance();
   };
 
-  const lockedEscrow = useMemo(() => {
-    return data.recentCalls
-      .filter((c) => c.status === "pending")
-      .reduce((sum, c) => sum + Number(c.amount_spent), 0);
-  }, [data.recentCalls]);
-
   const settledTotal = Number(data.stats?.total_spent ?? 0);
   const filteredApis = marketplace.filter(
     (a) =>
@@ -330,19 +324,15 @@ export default function DashboardPage() {
         </button>
       </div>
 
-      {/* Escrow & balance — concise strip */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px border border-white/[0.07] bg-white/[0.07]">
+      {/* Balance — concise strip */}
+      <div className="grid grid-cols-3 gap-px border border-white/[0.07] bg-white/[0.07]">
         {[
           {
             label: "Available",
             value: balanceLoading ? "…" : `${usdc} USDC`,
           },
           {
-            label: "Locked escrow",
-            value: `${lockedEscrow.toFixed(4)} USDC`,
-          },
-          {
-            label: "Settled",
+            label: "Spent",
             value: `${settledTotal.toFixed(4)} USDC`,
           },
           {

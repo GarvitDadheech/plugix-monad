@@ -100,29 +100,30 @@ export function DocsTable({
   headers,
   rows,
 }: {
-  headers: [string, string];
-  rows: [string, string][];
+  headers: string[];
+  rows: string[][];
 }) {
   return (
     <div className="overflow-x-auto border border-white/[0.07]">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-white/[0.06] bg-white/[0.02]">
-            <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-white/35 font-normal">
-              {headers[0]}
-            </th>
-            <th className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-white/35 font-normal">
-              {headers[1]}
-            </th>
+            {headers.map((h) => (
+              <th key={h} className="px-4 py-2.5 font-mono text-[10px] uppercase tracking-wider text-white/35 font-normal">
+                {h}
+              </th>
+            ))}
           </tr>
         </thead>
         <tbody className="divide-y divide-white/[0.05]">
-          {rows.map(([a, b]) => (
-            <tr key={a}>
+          {rows.map((row) => (
+            <tr key={row[0]}>
               <td className="px-4 py-3 font-mono text-[12px] text-emerald-400/75 align-top whitespace-nowrap">
-                {a}
+                {row[0]}
               </td>
-              <td className="px-4 py-3 text-[13px] text-white/45 leading-relaxed">{b}</td>
+              {row.slice(1).map((cell, i) => (
+                <td key={i} className="px-4 py-3 text-[13px] text-white/45 leading-relaxed">{cell}</td>
+              ))}
             </tr>
           ))}
         </tbody>
