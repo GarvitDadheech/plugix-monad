@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Inter, Plus_Jakarta_Sans } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
 import { Providers } from "@/components/providers";
 import "./globals.css";
@@ -18,9 +19,9 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata = {
-  title: "Plugix — AI Agent Execution Layer",
+  title: "Plugix — API Marketplace for AI Agents",
   description:
-    "The execution and payment layer for AI agents. Pay-per-use APIs on Monad, powered by Privy embedded wallets.",
+    "AI agents discover APIs, pay automatically in USDC, and settle on Monad. Developers earn per execution.",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
@@ -32,7 +33,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html
       lang="en"
-      className={`dark ${inter.variable} ${jakarta.variable} ${GeistMono.variable}`}
+      className={`dark ${GeistSans.variable} ${inter.variable} ${jakarta.variable} ${GeistMono.variable}`}
     >
       <body className="font-sans antialiased" suppressHydrationWarning>
         <Providers>{children}</Providers>
