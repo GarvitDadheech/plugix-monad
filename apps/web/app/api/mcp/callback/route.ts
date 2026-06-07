@@ -1,109 +1,69 @@
-import { NextRequest, NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
-import { verifyAccessToken } from "@/lib/auth";
-import { executePaidApiCallOnChain } from "@/lib/payments";
+import { type NextRequest } from "next/server";
 import { env } from "@/lib/env";
-import { getUserByPrivyId } from "@/lib/queries/users";
+import { findUserByPrivyId } from "@/lib/queries/users";
+import { insertApiCall } from "@/lib/queries/api-calls";
 
 /**
- * MCP Callback Handler
+ * MCP Callback — records a completed x402 API call in the DB.
  *
- * Called by the MCP server to execute a payment on behalf of the user.
- * The MCP server has already verified the user's auth token and wants to
- * pay for an API call using the user's Privy embedded wallet.
+ * Called by the MCP server after a successful x402 payment + response.
+ * Payment is already settled on-chain by the x402 protocol; this endpoint
+ * just writes the record so the dashboard can show usage stats.
  *
- * Request body:
- * {
- *   userAuthToken: string,        // Privy auth token
- *   endpoint: string,              // e.g. "/api/generate-image"
- *   price: string,                 // USDC amount (e.g. "0.1")
- *   token: string                  // "USDC"
- * }
+ * Headers:
+ *   x-mcp-secret: <MCP_CALLBACK_SECRET>
  *
- * Response:
- * {
- *   txHash: string                 // Monad tx hash for the payment
- * }
+ * Body:
+ *   privyUserId  string   Privy user ID of the caller
+ *   apiId        number   Marketplace API ID
+ *   amountSpent  string   USDC amount, e.g. "0.01"
+ *   txHash       string   On-chain tx hash
+ *   status       string   "success" | "failed"
  */
 export async function POST(req: NextRequest) {
-  try {
-    // Verify the callback secret
-    const secret = req.headers.get("x-mcp-callback-secret");
-    const expectedSecret = env().MCP_CALLBACK_SECRET;
-
-    if (!secret || secret !== expectedSecret) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await req.json();
-    const { userAuthToken, apiUrl, price, token } = body;
-
-    if (!userAuthToken || !apiUrl || !price || !token) {
-      return NextResponse.json(
-        { error: "Missing required fields: userAuthToken, apiUrl, price, token" },
-        { status: 400 }
-      );
-    }
-
-    // Verify the JWT token from MCP
-    let verifiedUser;
-    const JWT_SECRET = process.env.JWT_SECRET || "dev-secret-key-change-in-production";
-
-    try {
-      const decoded = jwt.verify(userAuthToken, JWT_SECRET) as { userId: string; type: string };
-
-      if (decoded.type !== "mcp") {
-        return NextResponse.json(
-          { error: "Invalid token type" },
-          { status: 401 }
-        );
-      }
-
-      // Get user from database using Privy ID
-      const dbUser = await getUserByPrivyId(decoded.userId);
-      if (!dbUser) {
-        return NextResponse.json(
-          { error: "User not found" },
-          { status: 404 }
-        );
-      }
-
-      verifiedUser = {
-        userId: decoded.userId,
-        dbUserId: dbUser.id,
-        walletAddress: dbUser.wallet_address
-      };
-    } catch (e) {
-      return NextResponse.json(
-        { error: `Invalid auth token: ${e instanceof Error ? e.message : String(e)}` },
-        { status: 401 }
-      );
-    }
-
-    if (!verifiedUser.walletAddress) {
-      return NextResponse.json(
-        { error: "User has no wallet address" },
-        { status: 400 }
-      );
-    }
-
-    // Execute the payment from the user's wallet
-    const result = await executePaidApiCallOnChain({
-      privyUserId: verifiedUser.userId,
-      userWalletAddress: verifiedUser.walletAddress,
-      amount: price,
-      apiId: -1,         // TODO: map apiUrl to apiId from DB
-      userId: verifiedUser.dbUserId
-    });
-
-    if (result.status !== "success") {
-      return NextResponse.json({ error: "Payment failed" }, { status: 500 });
-    }
-
-    return NextResponse.json({ txHash: result.txHash }, { status: 200 });
-  } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    console.error("[MCP Callback] Error:", msg);
-    return NextResponse.json({ error: msg }, { status: 500 });
+  // Verify shared secret
+  const secret = req.headers.get("x-mcp-secret");
+  if (!secret || secret !== env().MCP_CALLBACK_SECRET) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  let body: {
+    privyUserId?: string;
+    apiId?: number;
+    amountSpent?: string;
+    txHash?: string;
+    status?: string;
+  } = {};
+  try {
+    body = await req.json();
+  } catch {
+    return Response.json({ error: "Invalid JSON" }, { status: 400 });
+  }
+
+  const { privyUserId, apiId, amountSpent, txHash, status } = body;
+  if (!privyUserId || !apiId || !amountSpent) {
+    return Response.json(
+      { error: "privyUserId, apiId, and amountSpent are required" },
+      { status: 400 }
+    );
+  }
+
+  const user = await findUserByPrivyId(privyUserId);
+  if (!user) {
+    return Response.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const callStatus: "success" | "failed" | "pending" =
+    status === "success" ? "success" : status === "failed" ? "failed" : "pending";
+
+  await insertApiCall({
+    userId: user.id,
+    apiId,
+    amountSpent,
+    platformFee: "0",
+    txHash: txHash ?? undefined,
+    status: callStatus,
+  });
+
+  return Response.json({ ok: true }, { status: 200 });
 }
