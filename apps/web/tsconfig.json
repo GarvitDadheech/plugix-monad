@@ -5,12 +5,10 @@
     "incremental": true,
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {},
+    "plugins": [{ "name": "next" }],
+    "paths": {
+      "@/*": ["./*"]
+    },
     "allowJs": true,
     "noEmit": true,
     "isolatedModules": true
@@ -18,12 +16,14 @@
   "include": [
     "app/**/*.ts",
     "app/**/*.tsx",
+    "components/**/*.ts",
+    "components/**/*.tsx",
+    "lib/**/*.ts",
+    "middleware.ts",
     "next-env.d.ts",
     "src/**/*.ts",
     "src/**/*.tsx",
     ".next/types/**/*.ts"
   ],
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

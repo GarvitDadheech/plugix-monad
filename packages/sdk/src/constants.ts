@@ -8,5 +8,5 @@ export const USDC_ADDRESS = "0xf817257fed379853cDe0fa4F97AB987181B1E5Ea";
 export const USDC_TOKEN_NAME = "USDC";
 export const USDC_NETWORK = "monad";
 
-// Monad testnet chain id (used by the EVM clients when signing/sending).
+// Monad devnet chain id (used by the EVM clients when signing/sending).
 export const MONAD_CHAIN_ID = 10143;

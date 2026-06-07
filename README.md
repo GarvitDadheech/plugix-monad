@@ -1,151 +1,64 @@
-# Plugix-POC
+# Plugix — AI Agent Execution Layer
 
-### Execution Layer for AI Agents (Powered by USDC)
-
-Plugix-POC is a working prototype of the Plugix execution layer — enabling **AI agents to autonomously discover, pay for, and execute APIs** using **USDC on Monad**.
-
-This POC demonstrates how API calls can become **real-time, programmable financial transactions**, eliminating API keys, subscriptions, and manual billing.
-
----
-
-## What This POC Demonstrates
-
-* **Pay-per-use APIs** using USDC (no subscriptions)
-* **HTTP-native payments (x402)** embedded directly in request flow
-* **Agent-compatible execution** (no human intervention)
-* **Programmable escrow-like payment validation**
-* **End-to-end flow: Prompt → API → Payment → Response**
-
----
-
-## Demo Video
-
-Watch the Plugix-POC in action: [https://drive.google.com/file/d/1RgjwolP7M4rYapJSvi-raDQozVbogh9g/view?usp=sharing](https://drive.google.com/file/d/1RgjwolP7M4rYapJSvi-raDQozVbogh9g/view?usp=sharing)
-
-### What the demo shows:
-
-* AI agent initiating a request
-* Receiving a `402 Payment Required` response
-* Paying in **USDC**
-* Retrying the request automatically
-* Getting the final response
-* No API keys, no manual billing
-
----
-
-## Why Plugix?
-
-AI agents today can think and generate — but they **cannot execute**.
-
-Every API requires:
-
-* Accounts
-* API keys
-* Billing setup
-
-This breaks autonomy.
-
-**Plugix fixes this by turning APIs into financial primitives.**
-
-Instead of:
-
-> Authenticate → Call API
-
-We move to:
-
-> Pay → Execute → Verify
-
----
-
-## How It Works
-
-### Flow Overview
-
-```
-Client / Agent        Plugix API Layer         Monad
-      |                     |                    |
-      |---- API Request --->|                    |
-      |                     |                    |
-      |<--- 402 (Price) ----|                    |
-      |                     |                    |
-      |---- Pay USDC ------>|------------------->|
-      |                     |                    |
-      |<--- tx hash --------|                    |
-      |                     |                    |
-      |---- Retry Request -->|                   |
-      |                     |--- Verify Tx ----->|
-      |                     |<-- Confirmed ------|
-      |                     |                    |
-      |<--- Response -------|                    |
-```
-
----
-
-## Example Use Case
-
-A user asks an AI agent:
-
-> "Generate a blog post about black holes"
-
-Flow:
-
-1. Agent calls `/api/ai/generate`
-2. Receives `402 Payment Required` (price in USDC)
-3. Pays instantly
-4. Retries request with proof of payment
-5. Receives generated response
-
-**No signup. No API key. No billing dashboard.**
-
----
-
-## API Endpoints
-
-### Paid Endpoints
-
-* `POST /api/ai/generate` — AI text generation (0.02 USDC)
-* `GET /api/weather` — Weather data (0.01 USDC)
-* `GET /api/crypto-price` — Crypto prices (0.02 USDC)
-
-### Public Endpoints
-
-* `GET /health`
-* `GET /dashboard/metrics`
-
----
-
-## Payment Model (x402 + USDC)
-
-* Payment triggered via `402 Payment Required`
-* Client pays using **USDC on Monad**
-* Middleware verifies:
-
-  * Transaction confirmation
-  * Correct token + amount
-  * Receiver address
-  * Reference binding (prevents replay)
-* Only then request is executed
+Plugix is the execution and payment layer for AI agents. Agents discover, pay for, and call APIs autonomously using **embedded wallets on Monad** — no API keys, no subscriptions, no human approval required.
 
 ---
 
 ## Architecture
 
-* `packages/sdk/` → x402 payment middleware
-* `apps/api/` → API server with paid endpoints
-* `apps/web/` → Demo UI + dashboard
+```
+plugix-monad/
+├── apps/
+│   └── web/                        # Next.js 15 dashboard (App Router)
+│       ├── app/
+│       │   ├── (marketing)/        # Public landing page (/)
+│       │   ├── (app)/              # Auth-gated app shell w/ sidebar
+│       │   │   ├── dashboard/      # Wallet, stats, recent calls
+│       │   │   ├── publish/        # Publish & manage APIs
+│       │   │   └── marketplace/    # Browse public API listings
+│       │   ├── docs/mcp/           # MCP integration docs (public)
+│       │   └── api/                # Next.js API routes
+│       │       ├── user/init/      # POST — register user in DB
+│       │       ├── user/enable-server-signing/
+│       │       ├── apis/           # GET list / POST create
+│       │       ├── stats/          # GET per-user analytics
+│       │       └── mcp/callback/   # POST — called by MCP server
+│       ├── components/
+│       │   ├── ui/                 # shadcn/ui components
+│       │   ├── providers.tsx       # PrivyProvider wrapper
+│       │   ├── auth-gate.tsx       # Client-side auth redirect
+│       │   ├── sidebar.tsx
+│       │   └── topbar.tsx
+│       ├── lib/
+│       │   ├── db.ts               # pg Pool
+│       │   ├── privy.ts            # Privy server client
+│       │   ├── auth.ts             # verifyAuthToken helper
+│       │   ├── payments.ts         # executePaidApiCallOnChain (TODO: wire Privy signer)
+│       │   ├── utils.ts
+│       │   └── queries/            # Typed DB helpers (users, apis, api-calls)
+│       └── db/
+│           └── schema.sql          # CREATE TABLE statements
+│
+├── packages/
+│   ├── sdk/                        # x402 payment middleware
+│   ├── mcp/                        # MCP server (Plugix tool definitions)
+│   └── client/                     # x402 client library
+```
 
 ---
 
 ## Tech Stack
 
-| Layer      | Tech            |
-| ---------- | --------------- |
-| Language   | TypeScript      |
-| Backend    | Express         |
-| Frontend   | Next.js + React |
-| Blockchain | Monad (EVM)     |
-| Payments   | x402 Protocol   |
-| Token      | USDC (ERC-20)   |
+| Layer       | Tech                              |
+|-------------|-----------------------------------|
+| Frontend    | Next.js 15 (App Router), React 19 |
+| Styling     | Tailwind CSS v3 + shadcn/ui       |
+| Auth        | Privy (`@privy-io/react-auth`)    |
+| Wallet      | Privy embedded wallets            |
+| Server auth | Privy server SDK + signers        |
+| Database    | Postgres (node-postgres `pg`)     |
+| Blockchain  | Monad EVM testnet                 |
+| Payments    | x402 + Privy signer (on-chain)    |
 
 ---
 
@@ -157,75 +70,94 @@ Flow:
 npm install
 ```
 
-### 2. Setup `.env`
+### 2. Setup environment
 
-```env
-MONAD_RPC_URL=https://testnet-rpc.monad.xyz
-RECEIVER_ADDRESS=0x<your_wallet>
-
-PORT=4000
-NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
-
-PAYER_PRIVATE_KEY=0x<payer_private_key>
-TOKEN_ADDRESS=0x<usdc_token_address_on_monad>
-
-AZURE_OPENAI_ENDPOINT=...
-AZURE_OPENAI_API_KEY=...
-AZURE_OPENAI_DEPLOYMENT=...
-```
-
-### 3. Run
+Copy and fill in the env file for the web app:
 
 ```bash
-npm run dev
+cp apps/web/.env.example apps/web/.env.local
 ```
 
-* API → http://localhost:4000
-* Web → http://localhost:3000
+Required variables:
 
-### 4. Test
+```env
+NEXT_PUBLIC_PRIVY_APP_ID=your-privy-app-id     # From privy.io dashboard
+PRIVY_APP_SECRET=your-privy-app-secret
+DATABASE_URL=postgresql://user:pass@localhost:5432/plugix
+MCP_CALLBACK_SECRET=some-secret-for-mcp-webhook
+NEXT_PUBLIC_CHAIN=monad-testnet
+```
 
-Go to `/demo`:
+### 3. Start Postgres via Docker
 
-* Enter prompt
-* Click Generate
-* Pay in USDC
-* Get response
+```bash
+docker compose up -d
+```
+
+This starts a Postgres 16 container on port 5432, auto-runs `apps/web/db/schema.sql`
+on first boot, and persists data in a named volume.
+
+```bash
+# Stop
+docker compose down
+
+# Reset (wipe all data)
+docker compose down -v
+```
+
+### 4. Run
+
+```bash
+npm run dev:web   # Web → http://localhost:3000
+```
 
 ---
 
-## Security Notes
+## Key Flows
 
-* Demo uses a local wallet private key (not production-safe)
-* Replay protection is in-memory
-* Use proper wallet + DB in production
+### Auth + Onboarding
+1. User visits `/` → clicks "Sign In with Privy"
+2. Privy creates an **embedded EVM wallet** (non-custodial, key in secure enclave)
+3. Frontend calls `POST /api/user/init` to register in Postgres
+4. Dashboard prompts user to enable **server-side signing** (one-time)
+
+### Server-Side Signing (Privy Signers)
+- User enables signing via the dashboard dialog
+- Backend calls Privy's signer API to configure access to the user's embedded wallet
+- From this point, our server can execute on-chain txs on behalf of the user **without popups**
+- Private key **never** leaves Privy's secure infrastructure
+- See `lib/payments.ts` for the integration hook point (TODO comments)
+
+### MCP → Payment Flow
+```
+Agent (Claude)
+  → MCP tool: execute_api_call { apiId }
+  → MCP server calls target API endpoint
+  → MCP server: POST /api/mcp/callback
+  → Backend: inserts api_call row
+  → Backend: calls executePaidApiCallOnChain (Privy signer)
+  → On-chain tx settled on Monad
+  → Response returned to agent
+```
 
 ---
 
-## Roadmap
+## API Reference
 
-* MCP-native API marketplace
-* Smart escrow layer (on-chain)
-* Agent SDK for autonomous execution
-* Multi-chain payments
-* Developer monetization layer
-
----
-
-## Vision
-
-Plugix aims to become the **default execution and payment layer for AI agents**.
-
-Web2 had API marketplaces.
-Humans had app stores.
-**AI agents will have Plugix.**
+| Method | Route                              | Auth          | Description                       |
+|--------|------------------------------------|---------------|-----------------------------------|
+| POST   | `/api/user/init`                   | Privy Bearer  | Upsert user (privy_user_id + wallet) |
+| POST   | `/api/user/enable-server-signing`  | Privy Bearer  | Enable Privy server-side signer   |
+| GET    | `/api/apis`                        | Public        | List all public APIs              |
+| POST   | `/api/apis`                        | Privy Bearer  | Publish a new API                 |
+| GET    | `/api/stats`                       | Privy Bearer  | Per-user spend analytics          |
+| POST   | `/api/mcp/callback`                | MCP secret    | Log an API call from MCP server   |
 
 ---
 
 ## Team
 
-**Shubh Kesharwani**
-**Garvit Dadheech**
+**Shubh Kesharwani** · **Garvit Dadheech**
 
 ---
 
