@@ -6,7 +6,7 @@
     "packages/*"
   ],
   "scripts": {
-    "postinstall": "npm --workspace packages/sdk run build && npm --workspace packages/client run build && cd packages/mcp && npx tsc -p tsconfig.json",
+    "postinstall": "npm --workspace packages/sdk run build && npm --workspace packages/client run build && npm --workspace packages/mcp run build",
     "dev": "concurrently -n api,web -c blue,green \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "npm --workspace apps/api run dev",
     "dev:web": "npm --workspace apps/web run dev",
@@ -16,5 +16,9 @@
   "devDependencies": {
     "concurrently": "^9.1.2",
     "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "@types/jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.3"
   }
 }

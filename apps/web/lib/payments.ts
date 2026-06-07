@@ -38,39 +38,28 @@ const MONAD_CAIP2 = "eip155:10143";
 export async function executePaidApiCallOnChain(
   params: PaymentParams
 ): Promise<PaymentResult> {
-  // ── Real implementation (uncomment when PRIVY_AUTHORIZATION_KEY is set) ──
-  //
-  // const wallet = await getEmbeddedWallet(params.privyUserId);
-  // if (!wallet) throw new Error("No embedded wallet found for user");
-  //
-  // // Convert MON amount to wei (18 decimals)
-  // const amountWei = BigInt(Math.round(parseFloat(params.amount) * 1e18));
-  //
-  // const { data } = await privy().walletApi.ethereum.sendTransaction({
-  //   walletId: wallet.id,
-  //   caip2: MONAD_CAIP2,
-  //   transaction: {
-  //     to: PLATFORM_RECEIVER,
-  //     value: `0x${amountWei.toString(16)}`,
-  //   },
-  //   // Idempotency key prevents double-spend on retry
-  //   idempotencyKey: `plugix-${params.userId}-${params.apiId}-${Date.now()}`,
-  // });
-  //
-  // return { txHash: data.hash, status: "success" };
+  const wallet = await getEmbeddedWallet(params.privyUserId);
+  if (!wallet) throw new Error("No embedded wallet found for user");
 
-  // ── Mock (remove once real call is wired) ──────────────────────────────
-  void privy;           // keep import live so TypeScript doesn't prune it
-  void getEmbeddedWallet;
-  void PLATFORM_RECEIVER;
-  void MONAD_CAIP2;
+  // Convert amount to wei (18 decimals)
+  const amountWei = BigInt(Math.round(parseFloat(params.amount) * 1e18));
 
-  const mockHash = `0x${Buffer.from(
-    `plugix-mock-${params.userId}-${params.apiId}-${Date.now()}`
-  )
-    .toString("hex")
-    .padEnd(64, "0")
-    .slice(0, 64)}`;
+  try {
+    const { data } = await privy().walletApi.ethereum.sendTransaction({
+      walletId: wallet.id,
+      caip2: MONAD_CAIP2,
+      transaction: {
+        to: PLATFORM_RECEIVER,
+        value: `0x${amountWei.toString(16)}`,
+      },
+      // Idempotency key prevents double-spend on retry
+      idempotencyKey: `plugix-${params.userId}-${params.apiId}-${Date.now()}`,
+    });
 
-  return { txHash: mockHash, status: "success" };
+    return { txHash: data.hash, status: "success" };
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : String(e);
+    console.error("[Payments] Transaction failed:", msg);
+    return { txHash: "", status: "failed" };
+  }
 }
