@@ -1,8 +1,8 @@
 # Plugix-POC
 
-### Execution Layer for AI Agents (Powered by AUDD)
+### Execution Layer for AI Agents (Powered by USDC)
 
-Plugix-POC is a working prototype of the Plugix execution layer — enabling **AI agents to autonomously discover, pay for, and execute APIs** using **AUDD on Solana**.
+Plugix-POC is a working prototype of the Plugix execution layer — enabling **AI agents to autonomously discover, pay for, and execute APIs** using **USDC on Monad**.
 
 This POC demonstrates how API calls can become **real-time, programmable financial transactions**, eliminating API keys, subscriptions, and manual billing.
 
@@ -10,7 +10,7 @@ This POC demonstrates how API calls can become **real-time, programmable financi
 
 ## What This POC Demonstrates
 
-* **Pay-per-use APIs** using AUDD (no subscriptions)
+* **Pay-per-use APIs** using USDC (no subscriptions)
 * **HTTP-native payments (x402)** embedded directly in request flow
 * **Agent-compatible execution** (no human intervention)
 * **Programmable escrow-like payment validation**
@@ -26,7 +26,7 @@ Watch the Plugix-POC in action: [https://drive.google.com/file/d/1RgjwolP7M4rYap
 
 * AI agent initiating a request
 * Receiving a `402 Payment Required` response
-* Paying in **AUDD**
+* Paying in **USDC**
 * Retrying the request automatically
 * Getting the final response
 * No API keys, no manual billing
@@ -62,15 +62,15 @@ We move to:
 ### Flow Overview
 
 ```
-Client / Agent        Plugix API Layer         Solana
+Client / Agent        Plugix API Layer         Monad
       |                     |                    |
       |---- API Request --->|                    |
       |                     |                    |
       |<--- 402 (Price) ----|                    |
       |                     |                    |
-      |---- Pay AUDD ------>|------------------->|
+      |---- Pay USDC ------>|------------------->|
       |                     |                    |
-      |<--- tx signature ---|                    |
+      |<--- tx hash --------|                    |
       |                     |                    |
       |---- Retry Request -->|                   |
       |                     |--- Verify Tx ----->|
@@ -90,7 +90,7 @@ A user asks an AI agent:
 Flow:
 
 1. Agent calls `/api/ai/generate`
-2. Receives `402 Payment Required` (price in AUDD)
+2. Receives `402 Payment Required` (price in USDC)
 3. Pays instantly
 4. Retries request with proof of payment
 5. Receives generated response
@@ -103,9 +103,9 @@ Flow:
 
 ### Paid Endpoints
 
-* `POST /api/ai/generate` — AI text generation (0.02 AUDD)
-* `GET /api/weather` — Weather data (0.01 AUDD)
-* `GET /api/crypto-price` — Crypto prices (0.02 AUDD)
+* `POST /api/ai/generate` — AI text generation (0.02 USDC)
+* `GET /api/weather` — Weather data (0.01 USDC)
+* `GET /api/crypto-price` — Crypto prices (0.02 USDC)
 
 ### Public Endpoints
 
@@ -114,10 +114,10 @@ Flow:
 
 ---
 
-## Payment Model (x402 + AUDD)
+## Payment Model (x402 + USDC)
 
 * Payment triggered via `402 Payment Required`
-* Client pays using **AUDD on Solana**
+* Client pays using **USDC on Monad**
 * Middleware verifies:
 
   * Transaction confirmation
@@ -143,9 +143,9 @@ Flow:
 | Language   | TypeScript      |
 | Backend    | Express         |
 | Frontend   | Next.js + React |
-| Blockchain | Solana          |
+| Blockchain | Monad (EVM)     |
 | Payments   | x402 Protocol   |
-| Token      | AUDD (SPL)      |
+| Token      | USDC (ERC-20)   |
 
 ---
 
@@ -160,13 +160,14 @@ npm install
 ### 2. Setup `.env`
 
 ```env
-SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
-RECEIVER_PUBKEY=<your_wallet>
+MONAD_RPC_URL=https://testnet-rpc.monad.xyz
+RECEIVER_ADDRESS=0x<your_wallet>
 
 PORT=4000
 NEXT_PUBLIC_API_BASE_URL=http://localhost:4000
 
-PAYER_KEYPAIR_JSON=[...]
+PAYER_PRIVATE_KEY=0x<payer_private_key>
+TOKEN_ADDRESS=0x<usdc_token_address_on_monad>
 
 AZURE_OPENAI_ENDPOINT=...
 AZURE_OPENAI_API_KEY=...
@@ -188,14 +189,14 @@ Go to `/demo`:
 
 * Enter prompt
 * Click Generate
-* Pay in AUDD
+* Pay in USDC
 * Get response
 
 ---
 
 ## Security Notes
 
-* Demo uses local keypair (not production-safe)
+* Demo uses a local wallet private key (not production-safe)
 * Replay protection is in-memory
 * Use proper wallet + DB in production
 

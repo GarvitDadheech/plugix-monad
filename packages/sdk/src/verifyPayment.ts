@@ -6,7 +6,6 @@ import {
   decodeEventLog,
   type Hex
 } from "viem";
-import { USDC_ADDRESS } from "./constants.js";
 import type { PaymentVerificationResult, VerifyPaymentInput } from "./types.js";
 
 const ERC20_ABI = parseAbi([
@@ -47,10 +46,6 @@ export async function verifyPayment(params: {
 }): Promise<PaymentVerificationResult> {
   const receiver = getAddress(params.receiverAddress);
   const token = getAddress(params.tokenAddress);
-
-  if (getAddress(params.tokenAddress) !== getAddress(USDC_ADDRESS)) {
-    return { ok: false, reason: "Only USDC payments are accepted" };
-  }
 
   const txHash = params.input.txSig as Hex;
   const quote = params.input.quote;

@@ -6,10 +6,10 @@ export default function HomePage() {
       {/* Hero */}
       <section style={{ paddingTop: 48 }}>
         <h1 style={{ fontSize: 40, margin: "0 0 16px 0", fontWeight: 700 }}>
-          Pay-per-use APIs on Solana
+          Pay-per-use APIs on Monad
         </h1>
         <p style={{ fontSize: 18, color: "#555", maxWidth: 560, lineHeight: 1.6, margin: 0 }}>
-          x402 lets any API accept micropayments in AUDD — instantly settled on-chain.
+          x402 lets any API accept micropayments in USDC — instantly settled on-chain.
           No subscriptions, no API keys. Each request costs exactly what it says.
         </p>
         <div style={{ display: "flex", gap: 12, marginTop: 24 }}>
@@ -39,9 +39,9 @@ export default function HomePage() {
           </p>
         </div>
         <div style={{ padding: 24, border: "1px solid #e5e7eb", borderRadius: 8 }}>
-          <h3 style={{ margin: "0 0 12px 0", fontSize: 18, fontWeight: 600 }}>AUDD Native</h3>
+          <h3 style={{ margin: "0 0 12px 0", fontSize: 18, fontWeight: 600 }}>USDC Native</h3>
           <p style={{ margin: 0, fontSize: 14, color: "#666", lineHeight: 1.6 }}>
-            Built on Solana using AUDD. Fast, cheap, and designed for APIs.
+            Built on Monad using USDC. Fast, cheap, and designed for APIs.
           </p>
         </div>
       </section>

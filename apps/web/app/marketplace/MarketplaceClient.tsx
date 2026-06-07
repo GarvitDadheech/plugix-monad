@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { createAuddClient } from "@x402/client";
+import { createUsdcClient } from "@x402/client";
 import type { Quote } from "@x402/client";
 
 type ApiType = "text-generation" | "image-generation" | "video-generation" | "summarize";
@@ -28,8 +28,8 @@ type CallState =
   | { stage: "done"; result: unknown; txSig?: string; quote?: Quote }
   | { stage: "error"; message: string };
 
-function useAuddCall(apiBaseUrl: string) {
-  const clientRef = useRef(createAuddClient({
+function useUsdcCall(apiBaseUrl: string) {
+  const clientRef = useRef(createUsdcClient({
     payer: async (quote) => {
       const payRes = await fetch("/api/pay", {
         method: "POST",
@@ -256,7 +256,7 @@ function ResultDisplay({ result }: { result: unknown }) {
 
 function ApiCard({ api, apiBaseUrl }: { api: MarketplaceApi; apiBaseUrl: string }) {
   const [expanded, setExpanded] = useState(false);
-  const { state, setState, callApi } = useAuddCall(apiBaseUrl);
+  const { state, setState, callApi } = useUsdcCall(apiBaseUrl);
 
   const currentStage = state.stage === "error" ? "idle" : state.stage;
   const isLoading = currentStage !== "idle" && currentStage !== "done";

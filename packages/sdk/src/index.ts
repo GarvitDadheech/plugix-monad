@@ -4,5 +4,5 @@ export * from "./quote.js";
 export * from "./replayStore.js";
 export * from "./verifyPayment.js";
 export * from "./expressMiddleware.js";
-export * from "./auddPaywall.js";
+export * from "./usdcPaywall.js";
 

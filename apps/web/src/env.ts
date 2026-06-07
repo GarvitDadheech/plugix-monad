@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 const ServerEnvSchema = z.object({
-  SOLANA_RPC_URL: z.string().min(1),
-  PAYER_KEYPAIR_JSON: z.string().min(1)
+  MONAD_RPC_URL: z.string().min(1),
+  PAYER_PRIVATE_KEY: z.string().min(1)
 });
 
 export type ServerEnv = z.infer<typeof ServerEnvSchema>;

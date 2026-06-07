@@ -1,2 +1,2 @@
 export * from "./types.js";
-export * from "./serverKeypairPayer.js";
+export * from "./serverWalletPayer.js";

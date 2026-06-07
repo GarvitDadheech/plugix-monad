@@ -1,12 +1,12 @@
-# `@audd-x402/sdk`
+# `@x402/payment-middleware`
 
-**AUDD Pay-per-Use Gateway SDK**
+**USDC Pay-per-Use Gateway SDK**
 
-Express middleware + Solana verification to monetize HTTP endpoints using AUDD (Australian Digital Dollar) through an x402-style payment flow:
+Express middleware + Monad (EVM) verification to monetize HTTP endpoints using USDC through an x402-style payment flow:
 
 1. Client calls an endpoint
 2. Server responds `402 Payment Required` with a quote (price, receiver, reference)
-3. Client pays (AUDD SPL transfer) and retries with headers
+3. Client pays (USDC ERC-20 transfer) and retries with headers
 4. Server verifies the on-chain payment and serves the response
 
 ## Why x402?
@@ -16,15 +16,15 @@ Express middleware + Solana verification to monetize HTTP endpoints using AUDD (
 - **Agent-compatible**: AI agents can pay autonomously using standard HTTP
 - **Micropayments viable**: Per-request pricing for small calls
 
-## Why AUDD?
+## Why USDC?
 
-- **Stable pricing in Australian dollars**: Predictable costs and accounting
-- **Real-world financial services**: AUD-denominated pricing for local use cases
+- **Stable pricing**: Predictable costs and accounting denominated in USD
+- **Widely adopted**: The most liquid stablecoin across EVM chains
 - **Removes volatility**: No exposure to crypto price swings
 
 ## Install / use (workspace)
 
-This repo uses npm workspaces. The SDK is consumed by `apps/api` as `@audd-x402/sdk`.
+This repo uses npm workspaces. The SDK is consumed by `apps/api` as `@x402/payment-middleware`.
 
 ## API
 
@@ -34,21 +34,18 @@ Wrap your Express app and configure pricing per route path.
 
 ```ts
 import express from "express";
-import { paymentMiddleware } from "@audd-x402/sdk";
+import { paymentMiddleware } from "@x402/payment-middleware";
 
 const app = express();
 
 app.use(
   paymentMiddleware({
     routes: {
-      "/api/weather": { price: "0.01", token: "AUDD" }
+      "/api/weather": { price: "0.01", token: "USDC" }
     },
-    receiverPubkey: process.env.RECEIVER_PUBKEY!,
-    rpcUrl: process.env.SOLANA_RPC_URL!,
-    commitment: "confirmed",
-    // Optional:
-    // auddMint: process.env.AUDD_MINT,
-    // quoteTtlSeconds: 300,
+    receiverAddress: process.env.RECEIVER_ADDRESS!,
+    rpcUrl: process.env.MONAD_RPC_URL!,
+    tokenAddress: process.env.TOKEN_ADDRESS!,
     onPaid: (evt) => {
       console.log("paid", evt);
     }
@@ -58,14 +55,17 @@ app.use(
 app.get("/api/weather", (_req, res) => res.json({ data: "Sunny 25°C" }));
 ```
 
+There is also a convenience helper, `usdcPaywall(routes, receiverAddress, rpcUrl, opts?)`,
+which fills in the USDC token address for you.
+
 #### `options.routes`
 
 Route pricing is keyed by **exact path** (`req.path`), e.g. `"/api/weather"`.
 
 ```ts
 {
-  "/api/weather": { price: "0.01", token: "AUDD" },
-  "/api/crypto-price": { price: "0.02", token: "AUDD" }
+  "/api/weather": { price: "0.01", token: "USDC" },
+  "/api/crypto-price": { price: "0.02", token: "USDC" }
 }
 ```
 
@@ -76,7 +76,7 @@ Route pricing is keyed by **exact path** (`req.path`), e.g. `"/api/weather"`.
 If the request is missing payment headers, the middleware returns:
 
 - **Status**: `402 Payment Required`
-- **Header**: `WWW-Authenticate: x402 token="AUDD", price="<price>"`
+- **Header**: `WWW-Authenticate: x402 token="USDC", price="<price>"`
 - **Body**: a `PaymentQuote` JSON object:
 
 ```json
@@ -84,9 +84,9 @@ If the request is missing payment headers, the middleware returns:
   "endpoint": "/api/weather",
   "method": "GET",
   "price": "0.01",
-  "token": "AUDD",
-  "mint": "AUDDttiEpCydTm7joUMbYddm72jAWXZnCpPZtDoxqBSw",
-  "receiver": "<receiver_pubkey>",
+  "token": "USDC",
+  "tokenAddress": "0xf817257fed379853cDe0fa4F97AB987181B1E5Ea",
+  "receiver": "0x<receiver_address>",
   "reference": "<unique_reference>",
   "expiresAt": "2026-04-22T12:34:56.000Z"
 }
@@ -96,23 +96,24 @@ If the request is missing payment headers, the middleware returns:
 
 Client retries with:
 
-- `x-payment-tx`: `<solana_transaction_signature>`
+- `x-payment-tx`: `<monad_transaction_hash>`
 - `x-payment-reference`: `<reference_from_quote>`
 
 If verification succeeds, the request continues to the route handler.
 
-## Verification rules (Solana)
+## Verification rules (Monad / EVM)
 
-The SDK verifies payments by fetching the parsed transaction via RPC and checking:
+The SDK verifies payments by fetching the transaction receipt via RPC and checking:
 
-- **Transaction status**: found + confirmed/finalized + no error
+- **Transaction status**: found + `status === "success"`
 - **Quote validity**: quote not expired (`expiresAt`)
-- **SPL transfer**: a `transferChecked` instruction exists (top-level or inner) where:
-  - `mint` matches `auddMint` (defaults to official AUDD mint)
-  - destination is the receiver’s **associated token account (ATA)** for that mint
-  - transferred amount ≥ quote price (decimals read from the mint)
-- **Memo binding (required)**: the transaction must include a Memo containing `x402:<reference>`
-- **Replay protection**: middleware tracks tx signatures and rejects reuse with `409`
+- **ERC-20 transfer**: a `Transfer` event log from the USDC token contract where:
+  - the token contract matches `tokenAddress` (defaults to the configured USDC address)
+  - `to` is the receiver address
+  - transferred amount ≥ quote price (decimals read from the token's `decimals()`)
+- **Reference binding (required)**: the transaction input must contain `x402:<reference>`,
+  appended to the ERC-20 `transfer` calldata by the payer
+- **Replay protection**: middleware tracks tx hashes and rejects reuse with `409`
 
 Source implementation:
 - `packages/sdk/src/verifyPayment.ts`
@@ -120,27 +121,27 @@ Source implementation:
 
 ## Configuration notes
 
-### AUDD mint
+### USDC token address
 
-Default mint is the official AUDD mint on Solana:
+Default token is the USDC address on Monad:
 
-- `AUDDttiEpCydTm7joUMbYddm72jAWXZnCpPZtDoxqBSw`
+- `0xf817257fed379853cDe0fa4F97AB987181B1E5Ea`
 
-You can override with `auddMint` (or env `AUDD_MINT`) for testing.
-
-Important: if you point at devnet and use a test mint, that mint must be a **standard SPL Token mint** owned by the classic token program (`Tokenkeg...`). If it’s a Token-2022 mint, `getMint()` from `@solana/spl-token` will throw.
+You can override with `tokenAddress` (or env `TOKEN_ADDRESS`) for testing. The
+address must be a standard ERC-20 token exposing `decimals()` and emitting the
+standard `Transfer(address,address,uint256)` event.
 
 ### Required env (typical)
 
-- `SOLANA_RPC_URL`
-- `RECEIVER_PUBKEY`
+- `MONAD_RPC_URL`
+- `RECEIVER_ADDRESS`
 
 ## Example Use Case
 
 A developer building a pay-per-use AI API:
 
 1. User sends `POST /api/ai/generate` with a prompt
-2. Server returns `402 Payment Required` with price in AUDD
+2. Server returns `402 Payment Required` with price in USDC
 3. User pays and retries
 4. Server verifies payment and returns AI response
 
@@ -155,8 +156,7 @@ No signup. No billing. No API keys.
 
 ## Exports
 
-- `paymentMiddleware`
+- `paymentMiddleware`, `usdcPaywall`, `priceInUsdc`
 - `verifyPayment`
-- constants: `OFFICIAL_AUDD_MINT`, `PAYMENT_TX_HEADER`, `PAYMENT_REFERENCE_HEADER`
+- constants: `USDC_ADDRESS`, `USDC_TOKEN_NAME`, `MONAD_CHAIN_ID`, `PAYMENT_TX_HEADER`, `PAYMENT_REFERENCE_HEADER`
 - types: `PaymentQuote`, `PaidEvent`, `PaymentMiddlewareOptions`, etc.
-

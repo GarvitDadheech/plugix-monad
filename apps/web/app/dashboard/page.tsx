@@ -1,8 +1,8 @@
 export const dynamic = "force-dynamic";
 
 type MetricsSnapshot = {
-  endpoints: Record<string, { requests: number; paidRequests: number; revenueAudd: number }>;
-  totalAuddSpent: number;
+  endpoints: Record<string, { requests: number; paidRequests: number; revenueUsdc: number }>;
+  totalUsdcSpent: number;
   totalApiCalls: number;
 };
 
@@ -26,7 +26,7 @@ export default async function DashboardPage() {
   const endpointList = metrics.endpoints
     ? Object.entries(metrics.endpoints)
         .map(([key, data]) => ({ key, ...data }))
-        .sort((a, b) => b.revenueAudd - a.revenueAudd)
+        .sort((a, b) => b.revenueUsdc - a.revenueUsdc)
     : [];
 
   return (
@@ -49,10 +49,10 @@ export default async function DashboardPage() {
           }}
         >
           <h3 style={{ margin: "0 0 12px 0", fontSize: 14, fontWeight: 600, color: "#666" }}>
-            Total AUDD Settled
+            Total USDC Settled
           </h3>
           <div style={{ fontSize: 32, fontWeight: 700 }}>
-            {metrics.totalAuddSpent?.toFixed(2) ?? "0.00"} AUDD
+            {metrics.totalUsdcSpent?.toFixed(2) ?? "0.00"} USDC
           </div>
         </div>
         <div
@@ -107,7 +107,7 @@ export default async function DashboardPage() {
                   Paid Requests
                 </th>
                 <th style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600, color: "#666" }}>
-                  Revenue (AUDD)
+                  Revenue (USDC)
                 </th>
               </tr>
             </thead>
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
                     {ep.paidRequests}
                   </td>
                   <td style={{ padding: "12px 16px", textAlign: "right", fontWeight: 600 }}>
-                    {ep.revenueAudd.toFixed(2)}
+                    {ep.revenueUsdc.toFixed(2)}
                   </td>
                 </tr>
               ))}

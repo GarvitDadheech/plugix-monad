@@ -29,7 +29,7 @@ export default async function MarketplacePage() {
       <div>
         <h1 style={{ margin: "0 0 8px 0", fontSize: 32 }}>API Marketplace</h1>
         <p style={{ margin: 0, color: "#666", fontSize: 16 }}>
-          {apis.length} APIs available · Paid instantly in AUDD on Solana
+          {apis.length} APIs available · Paid instantly in USDC on Monad
         </p>
       </div>
 

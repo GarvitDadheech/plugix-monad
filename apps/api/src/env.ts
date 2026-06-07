@@ -2,10 +2,9 @@ import { z } from "zod";
 
 const EnvSchema = z.object({
   PORT: z.string().optional().default("4000"),
-  SOLANA_RPC_URL: z.string().min(1),
-  RECEIVER_PUBKEY: z.string().min(1),
-  TOKEN_MINT: z.string().optional(),
-  COMMITMENT: z.enum(["confirmed", "finalized"]).optional().default("confirmed"),
+  MONAD_RPC_URL: z.string().min(1),
+  RECEIVER_ADDRESS: z.string().min(1),
+  TOKEN_ADDRESS: z.string().optional(),
   AZURE_OPENAI_ENDPOINT: z.string().optional(),
   AZURE_OPENAI_API_KEY: z.string().optional(),
   AZURE_OPENAI_DEPLOYMENT: z.string().optional(),

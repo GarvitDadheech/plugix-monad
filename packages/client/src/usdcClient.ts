@@ -1,10 +1,10 @@
 import { PAYMENT_TX_HEADER, PAYMENT_REFERENCE_HEADER } from "./constants.js";
-import type { AuddClientConfig, Payer, Quote } from "./types.js";
+import type { UsdcClientConfig, Payer, Quote } from "./types.js";
 
-export class AuddClient {
+export class UsdcClient {
   private payer: Payer;
 
-  constructor(config: AuddClientConfig) {
+  constructor(config: UsdcClientConfig) {
     this.payer = config.payer;
   }
 
@@ -26,6 +26,6 @@ export class AuddClient {
   }
 }
 
-export function createAuddClient(config: AuddClientConfig): AuddClient {
-  return new AuddClient(config);
+export function createUsdcClient(config: UsdcClientConfig): UsdcClient {
+  return new UsdcClient(config);
 }

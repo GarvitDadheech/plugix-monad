@@ -1,3 +1,3 @@
 export * from "./types.js";
 export * from "./constants.js";
-export * from "./auddClient.js";
+export * from "./usdcClient.js";

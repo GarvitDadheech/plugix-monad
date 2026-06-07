@@ -75,6 +75,7 @@ export type UsdcRouteConfig = number | {
 };
 
 export type UsdcPaywallOptions = {
+  tokenAddress?: string;
   quoteTtlSeconds?: number;
   getNow?: () => Date;
   replayStore?: ReplayStore;

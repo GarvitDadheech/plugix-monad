@@ -3,7 +3,7 @@ export type Quote = {
   method: string;
   price: string;
   token: string;
-  mint: string;
+  tokenAddress: string;
   receiver: string;
   reference: string;
   expiresAt: string;
@@ -16,12 +16,12 @@ export type Quote = {
 
 export type Payer = (quote: Quote) => Promise<string>;
 
-export type AuddClientConfig = {
+export type UsdcClientConfig = {
   payer: Payer;
 };
 
-export type ServerKeypairPayerConfig = {
-  keypairJson: string;
+export type ServerWalletPayerConfig = {
+  privateKey: string;
   rpcUrl: string;
-  commitment?: "confirmed" | "finalized";
+  chainId?: number;
 };

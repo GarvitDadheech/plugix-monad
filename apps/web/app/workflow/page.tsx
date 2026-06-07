@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { createAuddClient } from "@x402/client";
+import { createUsdcClient } from "@x402/client";
 
 type WorkflowStage = "idle" | "running" | "done" | "error";
 
@@ -23,7 +23,7 @@ export default function WorkflowPage() {
   const [totalSpent, setTotalSpent] = useState<string | null>(null);
 
   const clientRef = useRef(
-    createAuddClient({
+    createUsdcClient({
       payer: async (quote) => {
         const payRes = await fetch("/api/pay", {
           method: "POST",
@@ -181,7 +181,7 @@ export default function WorkflowPage() {
               <div style={{ flex: 1 }}>
                 <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>{step.name}</h3>
                 <p style={{ margin: "4px 0 0 0", fontSize: 14, color: "#666" }}>
-                  Cost: {step.price} AUDD
+                  Cost: {step.price} USDC
                 </p>
               </div>
               <div style={{ textAlign: "right" }}>
@@ -305,10 +305,10 @@ export default function WorkflowPage() {
             Workflow Complete
           </h3>
           <p style={{ margin: "0 0 4px 0", fontSize: 14, color: "#166534" }}>
-            Total paid: <strong>{totalSpent} AUDD</strong>
+            Total paid: <strong>{totalSpent} USDC</strong>
           </p>
           <p style={{ margin: "0 0 4px 0", fontSize: 14, color: "#166534" }}>
-            2 API calls executed and settled instantly on Solana
+            2 API calls executed and settled instantly on Monad
           </p>
         </div>
       )}

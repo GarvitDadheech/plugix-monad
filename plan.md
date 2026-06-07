@@ -7,9 +7,9 @@ Let’s break this down like a **real product + system design**, not just an ide
 
 ## 👉 Product:
 
-**“AUDD x402 Gateway — Stripe for APIs”**
+**“USDC x402 Gateway — Stripe for APIs”**
 
-> A developer platform that lets anyone monetize APIs using **AUDD stablecoin on Solana via x402**
+> A developer platform that lets anyone monetize APIs using **USDC stablecoin on Monad via x402**
 
 ---
 
@@ -31,7 +31,7 @@ This is literally how it works 👇
 * Request is retried with payment proof
 * Server responds with data ([Coinbase Developer Docs][1])
 
-👉 This makes **internet-native payments possible inside HTTP itself** ([Solana][2])
+👉 This makes **internet-native payments possible inside HTTP itself** ([Monad][2])
 
 ---
 
@@ -43,7 +43,7 @@ This is literally how it works 👇
 
 ```js
 app.use(paymentMiddleware({
-  "/api/weather": { price: 0.01 AUDD }
+  "/api/weather": { price: 0.01 USDC }
 }))
 ```
 
@@ -51,12 +51,12 @@ app.use(paymentMiddleware({
 
 ---
 
-### 2. Payment Layer (AUDD on Solana)
+### 2. Payment Layer (USDC on Monad)
 
-* Token: AUDD
-* Chain: Solana
-* Wallet: Phantom / Backpack
-* Fast + cheap → ideal for x402 micropayments ([Solana][2])
+* Token: USDC
+* Chain: Monad
+* Wallet: MetaMask / Rabby
+* Fast + cheap → ideal for x402 micropayments ([Monad][2])
 
 ---
 
@@ -88,7 +88,7 @@ x402 recommends a verifier service that:
 ### 5. Dashboard (your differentiator)
 
 * API usage
-* Revenue (AUDD earned)
+* Revenue (USDC earned)
 * Logs
 * Endpoint pricing
 
@@ -110,8 +110,8 @@ GET /weather
 
 ```
 402 Payment Required
-Price: 0.01 AUDD
-Wallet: xyz.sol
+Price: 0.01 USDC
+Wallet: 0xReceiver...
 ```
 
 ---
@@ -168,11 +168,11 @@ PAYMENT-SIGNATURE: <signed_tx>
 
   * Signature
   * Transaction
-  * Token = AUDD
+  * Token = USDC
 * Use:
 
-  * Solana RPC
-  * Web3.js
+  * Monad RPC
+  * viem
 
 ---
 
@@ -210,14 +210,14 @@ PAYMENT-SIGNATURE: <signed_tx>
 
 ## Blockchain
 
-* Solana
-* @solana/web3.js
-* SPL token (AUDD)
+* Monad (EVM)
+* viem
+* ERC-20 token (USDC)
 
 ## x402
 
 * `@x402/core`
-* `@x402/svm` (Solana support)
+* `@x402/evm` (EVM support)
 
 ## Frontend
 
@@ -226,7 +226,7 @@ PAYMENT-SIGNATURE: <signed_tx>
 
 ## Wallet
 
-* Phantom / Solana wallet adapter
+* MetaMask / EVM wallet adapter
 
 ---
 
@@ -241,13 +241,13 @@ x402 Middleware (your SDK)
         ↓
 402 Response (price)
         ↓
-Client Wallet pays (AUDD)
+Client Wallet pays (USDC)
         ↓
-Payment Signature
+Payment Tx Hash
         ↓
 Verification Layer
         ↓
-Solana Network
+Monad Network
         ↓
 API Response
 ```
@@ -260,7 +260,7 @@ API Response
 
 * Basic x402 middleware
 * Hardcoded price
-* AUDD transfer verification
+* USDC transfer verification
 
 ## Day 3–4:
 
@@ -287,10 +287,10 @@ You should:
 
 ## ✅ Add THESE:
 
-### 1. AUDD-native focus
+### 1. USDC-native focus
 
-* Pricing in AUD
-* AUD accounting
+* Pricing in USD
+* USD accounting
 
 ---
 
@@ -320,8 +320,8 @@ You should:
 | Criteria         | Your project       |
 | ---------------- | ------------------ |
 | Real-world use   | ✅ API monetization |
-| Uses AUDD        | ✅ core payment     |
-| Solana-native    | ✅                  |
+| Uses USDC        | ✅ core payment     |
+| Monad-native     | ✅                  |
 | Production-ready | ✅                  |
 | Unique           | ✅ infra play       |
 
@@ -338,4 +338,4 @@ You should:
 
 # 🏆 Final Positioning (THIS is your pitch)
 
-> “We are building a developer platform that enables API monetization using AUDD via x402, allowing instant, per-request payments without subscriptions, API keys, or intermediaries.”
+> “We are building a developer platform that enables API monetization using USDC via x402, allowing instant, per-request payments without subscriptions, API keys, or intermediaries.”

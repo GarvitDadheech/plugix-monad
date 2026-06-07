@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 
 export const metadata = {
   title: "x402 Payment Middleware Demo",
-  description: "Pay-per-use APIs demo using x402-style 402 payments on Solana."
+  description: "Pay-per-use APIs demo using x402-style 402 payments on Monad."
 };
 
 export default function RootLayout(props: { children: ReactNode }) {

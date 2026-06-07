@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { createAuddClient } from "@x402/client";
+import { createUsdcClient } from "@x402/client";
 import type { Quote } from "@x402/client";
 
 type Stage =
@@ -50,7 +50,7 @@ export default function DemoPage() {
 
   const client = useMemo(
     () =>
-      createAuddClient({
+      createUsdcClient({
         payer: async (quote) => {
           setState((prev) => {
             if (prev.stage !== "payment_required") return prev;
@@ -144,10 +144,10 @@ export default function DemoPage() {
     <main style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 800 }}>
       <div>
         <h1 style={{ margin: 0, marginBottom: 8, fontSize: 28 }}>
-          Pay-per-use AI API with AUDD
+          Pay-per-use AI API with USDC
         </h1>
         <p style={{ margin: 0, color: "#555", lineHeight: 1.6 }}>
-          Each request costs 0.02 AUDD. No subscriptions. No API keys.
+          Each request costs 0.02 USDC. No subscriptions. No API keys.
         </p>
       </div>
 

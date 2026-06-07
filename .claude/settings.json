@@ -5,8 +5,8 @@
       "args": ["/home/shubh/Desktop/x402-pymnts-sdk/packages/mcp/dist/index.js"],
       "env": {
         "X402_API_BASE_URL": "http://localhost:4000",
-        "PAYER_KEYPAIR_JSON": "[112,120,75,15,33,43,44,81,172,188,67,129,56,121,207,218,214,81,169,32,103,29,226,114,92,216,52,193,215,102,196,252,88,43,162,162,131,113,238,64,127,138,218,106,178,119,244,55,108,254,75,22,187,108,218,191,96,181,177,76,204,239,31,44]",
-        "SOLANA_RPC_URL": "https://devnet.helius-rpc.com/?api-key=080183ab-dc2d-4b66-90e2-389075f52f96"
+        "PAYER_PRIVATE_KEY": "0xYOUR_PAYER_PRIVATE_KEY_HERE",
+        "MONAD_RPC_URL": "https://testnet-rpc.monad.xyz"
       }
     }
   }

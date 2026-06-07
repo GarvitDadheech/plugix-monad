@@ -1,7 +1,7 @@
 import "dotenv/config";
 import cors from "cors";
 import express from "express";
-import { auddPaywall, type PaidEvent } from "@x402/payment-middleware";
+import { usdcPaywall, type PaidEvent } from "@x402/payment-middleware";
 import { getEnv } from "./env.js";
 import { createMetricsStore } from "./metrics.js";
 import { generateImage } from "./image.js";
@@ -23,7 +23,7 @@ const MARKETPLACE_APIS = [
     description: "Generate an image from a text prompt",
     category: "AI",
     price: "0.10",
-    token: "AUDD",
+    token: "USDC",
     apiType: "image-generation",
     source: "internal",
     owner: "x402-demo"
@@ -35,7 +35,7 @@ const MARKETPLACE_APIS = [
     description: "Generate a short video clip using Azure Sora",
     category: "AI",
     price: "0.50",
-    token: "AUDD",
+    token: "USDC",
     apiType: "video-generation",
     source: "internal",
     owner: "x402-demo"
@@ -55,15 +55,15 @@ app.get("/api/marketplace", (_req, res) => {
 });
 
 app.use(
-  auddPaywall(
+  usdcPaywall(
     {
       "/api/generate-image": { price: 0.1, name: "AI Image Generation", category: "AI", description: "Generate an image from a text prompt" },
       "/api/generate-video": { price: 0.5, name: "AI Video Generation", category: "AI", description: "Generate a short video clip using Azure Sora" }
     },
-    env.RECEIVER_PUBKEY,
-    env.SOLANA_RPC_URL,
+    env.RECEIVER_ADDRESS,
+    env.MONAD_RPC_URL,
     {
-      commitment: env.COMMITMENT,
+      tokenAddress: env.TOKEN_ADDRESS,
       onPaid: (evt: PaidEvent) => {
         const key = `${evt.method} ${evt.endpoint}`;
         metrics.recordPaid(key, evt.price);
