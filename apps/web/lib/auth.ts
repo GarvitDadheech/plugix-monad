@@ -21,7 +21,7 @@
 
 import type { NextRequest } from "next/server";
 import { verifyAccessToken } from "@/lib/privy";
-import { findUserByPrivyId } from "@/lib/queries/users";
+import { upsertUser } from "@/lib/queries/users";
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -84,14 +84,8 @@ export async function getAuthUser(
   const authed = await requirePrivy(req);
   if (authed instanceof Response) return authed;
 
-  const dbUser = await findUserByPrivyId(authed.privyUserId);
-  if (!dbUser) {
-    return Response.json(
-      { error: "User not found — call /api/user/init first." },
-      { status: 404 }
-    );
-  }
-
+  // Auto-create (or update) the user on every request — no separate /init needed.
+  const dbUser = await upsertUser(authed.privyUserId, authed.wallet, authed.walletId);
   return { ...authed, dbUserId: dbUser.id };
 }
 

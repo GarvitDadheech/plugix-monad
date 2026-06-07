@@ -1,27 +1,17 @@
 import { type NextRequest } from "next/server";
-import { requirePrivy, serverError } from "@/lib/auth";
-import { upsertUser } from "@/lib/queries/users";
+import { getAuthUser, serverError } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
-  const auth = await requirePrivy(request);
+  const auth = await getAuthUser(request);
   if (auth instanceof Response) return auth;
 
-  let body: { walletAddress?: string } = {};
   try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
-
-  const walletAddress = body.walletAddress ?? auth.wallet;
-
-  if (!walletAddress) {
-    return Response.json({ error: "walletAddress is required" }, { status: 400 });
-  }
-
-  try {
-    const user = await upsertUser(auth.privyUserId, walletAddress);
-    return Response.json({ user }, { status: 200 });
+    // getAuthUser already upserted the user with server_signing_enabled = TRUE.
+    // Return the db user id so the client knows init succeeded.
+    return Response.json(
+      { user: { id: auth.dbUserId, server_signing_enabled: true } },
+      { status: 200 }
+    );
   } catch (err) {
     return serverError(err);
   }

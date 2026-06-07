@@ -21,15 +21,20 @@ export async function findUserByPrivyId(privyUserId: string): Promise<DBUser | n
 
 export async function upsertUser(
   privyUserId: string,
-  walletAddress: string
+  walletAddress: string,
+  signerId?: string | null
 ): Promise<DBUser> {
   const row = await queryOne<DBUser>(
-    `INSERT INTO users (privy_user_id, wallet_address)
-     VALUES ($1, $2)
+    `INSERT INTO users (privy_user_id, wallet_address, server_signing_enabled, signer_id)
+     VALUES ($1, $2, TRUE, $3)
      ON CONFLICT (privy_user_id)
-     DO UPDATE SET wallet_address = EXCLUDED.wallet_address, updated_at = NOW()
+     DO UPDATE SET
+       wallet_address = EXCLUDED.wallet_address,
+       server_signing_enabled = TRUE,
+       signer_id = COALESCE(EXCLUDED.signer_id, users.signer_id),
+       updated_at = NOW()
      RETURNING *`,
-    [privyUserId, walletAddress]
+    [privyUserId, walletAddress, signerId ?? null]
   );
   return row!;
 }

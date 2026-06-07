@@ -284,7 +284,7 @@ const STEPS = [
   {
     num: "03",
     title: "Publish or browse",
-    desc: "Wrap any API endpoint and publish to the marketplace at a MON price, or browse existing APIs to use as a consumer.",
+    desc: "Wrap any API endpoint and publish to the marketplace at a USDC price, or browse existing APIs to use as a consumer.",
     icon: Globe,
   },
   {
@@ -386,7 +386,7 @@ function FeatureBento() {
             API marketplace
           </h3>
           <p className="text-sm text-white/38 leading-relaxed">
-            Publish any endpoint. Set a MON price. Earn per execution — no billing setup,
+            Publish any endpoint. Set a USDC price. Earn per execution — no billing setup,
             no invoicing, no chasing payments.
           </p>
         </div>
@@ -541,7 +541,7 @@ function DeveloperSection() {
 
   const consumeCopy = {
     heading: <>Two lines of config.<br /><span className="gradient-text">Fully autonomous.</span></>,
-    body: "Add Plugix to your Claude Code MCP configuration. Your agent discovers APIs in the marketplace, pays per call in MON, and executes — without a single popup.",
+    body: "Add Plugix to your Claude Code MCP configuration. Your agent discovers APIs in the marketplace, pays per call in USDC on Monad, and executes — without a single popup.",
     steps: [
       { color: "bg-violet-400", text: "Agent calls list_apis() → gets marketplace results" },
       { color: "bg-sky-400",    text: "MCP server routes the selected API call" },
@@ -553,10 +553,10 @@ function DeveloperSection() {
 
   const publishCopy = {
     heading: <>One middleware import.<br /><span className="gradient-text">Instant monetization.</span></>,
-    body: "Wrap any existing Express API with the Plugix SDK. Set a MON price per route — Plugix handles payment verification, escrow, and settlement. Your route code stays untouched.",
+    body: "Wrap any existing Express API with the Plugix SDK. Set a USDC price per route — Plugix handles payment verification, escrow, and settlement. Your route code stays untouched.",
     steps: [
       { color: "bg-sky-400",    text: "Client hits your endpoint without payment headers" },
-      { color: "bg-amber-400",  text: "Middleware returns 402 with a MON price quote" },
+      { color: "bg-amber-400",  text: "Middleware returns 402 with a USDC price quote" },
       { color: "bg-violet-400", text: "Client pays and retries — middleware verifies on-chain" },
       { color: "bg-emerald-400",text: "Your route handler runs and earns per execution" },
     ],
@@ -657,7 +657,7 @@ const PERSONAS = [
   {
     icon: Code2,
     audience: "API Builders",
-    desc: "Have a useful endpoint? Publish it to the Plugix marketplace at a MON price. Earn from every agent execution, automatically settled on-chain with zero billing overhead.",
+    desc: "Have a useful endpoint? Publish it to the Plugix marketplace at a USDC price. Earn from every agent execution, automatically settled on-chain with zero billing overhead.",
     tags: ["Monetization", "Pay-per-use", "Passive income"],
   },
   {

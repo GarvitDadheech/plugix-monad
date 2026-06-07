@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatAmount, shortenAddress } from "@/lib/utils";
@@ -23,11 +22,7 @@ interface PublishedApi {
   created_at: string;
 }
 
-const CHAINS = [
-  { value: "monad-devnet", label: "Monad Devnet" },
-  { value: "ethereum-mainnet", label: "Ethereum Mainnet" },
-  { value: "base-mainnet", label: "Base Mainnet" },
-];
+const CHAIN = { value: "monad-devnet", label: "Monad Devnet" };
 
 export default function PublishPage() {
   const { getAccessToken } = usePrivy();
@@ -83,7 +78,7 @@ export default function PublishPage() {
 
     if (res.ok) {
       setSuccess(true);
-      setForm({ name: "", description: "", endpointUrl: "", pricePerCall: "", chain: "monad-testnet" });
+      setForm({ name: "", description: "", endpointUrl: "", pricePerCall: "", chain: "monad-devnet" });
       fetchMyApis();
     }
     setLoading(false);
@@ -120,7 +115,7 @@ export default function PublishPage() {
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="price">Price per Call (MON) *</Label>
+                <Label htmlFor="price">Price per Call (USDC) *</Label>
                 <Input
                   id="price"
                   type="number"
@@ -159,21 +154,10 @@ export default function PublishPage() {
 
             <div className="space-y-2">
               <Label>Chain</Label>
-              <Select
-                value={form.chain}
-                onValueChange={(val) => setForm({ ...form, chain: val })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {CHAINS.map((c) => (
-                    <SelectItem key={c.value} value={c.value}>
-                      {c.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex items-center h-9 px-3 rounded-md border border-border bg-muted/30 text-sm text-muted-foreground gap-2">
+                <span className="h-2 w-2 rounded-full bg-emerald-400" />
+                {CHAIN.label}
+              </div>
             </div>
 
             <div className="flex items-center gap-3 pt-1">
@@ -228,7 +212,7 @@ export default function PublishPage() {
                       </a>
                     </TableCell>
                     <TableCell className="font-mono text-sm">
-                      {formatAmount(api.price_per_call)} MON
+                      {formatAmount(api.price_per_call)} USDC
                     </TableCell>
                     <TableCell>
                       <Badge variant="secondary" className="text-xs">

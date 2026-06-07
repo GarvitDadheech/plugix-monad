@@ -18,7 +18,7 @@ import { privy, getEmbeddedWallet } from "@/lib/privy";
 export interface PaymentParams {
   privyUserId: string;
   userWalletAddress: string;
-  amount: string;       // in MON (e.g. "0.01")
+  amount: string;       // in USDC (e.g. "0.01")
   apiId: number;
   userId: number;
 }

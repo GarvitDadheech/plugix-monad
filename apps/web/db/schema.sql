@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS apis (
   description      TEXT,
   endpoint_url     TEXT NOT NULL,
   price_per_call   NUMERIC(36, 18) NOT NULL DEFAULT 0,
-  chain            TEXT NOT NULL DEFAULT 'monad-testnet',
+  chain            TEXT NOT NULL DEFAULT 'monad-devnet',
   is_public        BOOLEAN NOT NULL DEFAULT TRUE,
   created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()

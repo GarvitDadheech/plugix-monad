@@ -62,7 +62,7 @@ function ApiCard({ api }: { api: ApiListing }) {
             <span className="text-lg font-bold text-primary">
               {formatAmount(api.price_per_call)}
             </span>
-            <span className="text-xs text-muted-foreground">MON / call</span>
+            <span className="text-xs text-muted-foreground">USDC / call</span>
           </div>
         </div>
       </CardHeader>
